@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEO Gap Radar — Road to Top 5</title>
+<style>
+  :root{
+    /* Palette taken from "The Link Farmer" tool's color codes. */
+    --bg:#f5f7f9; --surface:rgba(255,255,255,0.40); --surface-2:rgba(255,255,255,0.62); --surface-3:rgba(17,34,28,0.07);
+    --ink:#142236; --ink-muted:#54595f; --ink-faint:#8996a0;
+    --accent:#1aab7f; --accent-contrast:#ffffff; --accent-tint:#d9f2e9; --accent-tint-ink:#0b3d2c;
+    --accent-grad-start:#1aab7f; --accent-grad-end:#1aab7f;
+    --danger:#a3453a; --danger-tint:#f5e3e0;
+    --warn:#8a6d1c; --warn-tint:#f5efd9;
+    --good:#1c7a52; --good-tint:#e0f2e9;
+    --page-bg: linear-gradient(165deg, #ffffff 0%, #f5f7f9 45%, #dbe6e1 100%);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0a121c; --surface:rgba(255,255,255,0.035); --surface-2:rgba(255,255,255,0.065); --surface-3:rgba(255,255,255,0.11);
+      --ink:#e9eef4; --ink-muted:#9aa7b2; --ink-faint:#657079;
+      --accent:#3ed9a6; --accent-contrast:#062018; --accent-tint:#15382d; --accent-tint-ink:#a8f0d7;
+      --accent-grad-start:#3ed9a6; --accent-grad-end:#3ed9a6;
+      --danger:#e2897c; --danger-tint:#3a2320;
+      --warn:#e0c265; --warn-tint:#3a3320;
+      --good:#6fd6a8; --good-tint:#173829;
+      --page-bg: linear-gradient(165deg, #101c29 0%, #0a121c 50%, #0a121c 100%);
+    }
+  }
+  *{box-sizing:border-box;}
+  html{background:var(--page-bg);}
+  body{
+    margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    padding:32px 18px 60px;
+  }
+  .wrap{max-width:1180px; margin:0 auto;}
+  header.page-head{text-align:center; margin-bottom:26px;}
+  header.page-head .eyebrow{
+    font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--accent-grad-end); margin-bottom:8px;
+  }
+  header.page-head h1{font-size:30px; margin:0 0 8px; color:var(--accent);}
+  header.page-head p{font-size:14.5px; color:var(--ink-muted); max-width:620px; margin:0 auto;}
+
+  .panel{
+    background:var(--surface); border-radius:var(--radius); padding:22px 24px;
+    margin-bottom:20px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  }
+  .panel h2{font-size:16px; margin:0 0 14px; color:var(--accent);}
+  .panel h2 .muted{font-weight:500; color:var(--ink-muted); font-size:12.5px;}
+
+  label{display:block; font-size:12px; font-weight:600; color:var(--ink-muted); margin-bottom:5px;}
+  input[type=text], input[type=url]{
+    width:100%; padding:10px 12px; font-size:13.5px; border:none; border-radius:9px;
+    background:var(--surface-2); outline:none; color:var(--ink);
+  }
+  input:focus{ outline:2px solid var(--accent-grad-end); outline-offset:1px; }
+
+  .field-row{display:flex; gap:10px; align-items:flex-end; margin-bottom:12px;}
+  .field-row .field{flex:1;}
+  .remove-btn{
+    flex-shrink:0; width:36px; height:36px; border-radius:9px; border:none; cursor:pointer;
+    background:var(--danger-tint); color:var(--danger); font-size:16px; font-weight:700; line-height:1;
+  }
+  .field-hint{font-size:11px; color:var(--ink-faint); margin:-6px 0 12px;}
+
+  .form-actions{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:6px;}
+  button{font-family:inherit; cursor:pointer;}
+  .btn{
+    padding:9px 16px; font-size:13px; font-weight:700; border:none; border-radius:9px;
+  }
+  .btn-primary{color:#fff; background:linear-gradient(135deg,var(--accent-grad-start),var(--accent-grad-end)); box-shadow:0 4px 14px -4px rgba(0,0,0,.35);}
+  .btn-ghost{color:var(--accent); background:var(--accent-tint);}
+  .btn-ghost.dark-fix{color:var(--accent-tint-ink);}
+  .btn:disabled{opacity:.55; cursor:default;}
+  .btn-sm{padding:6px 11px; font-size:12px; border-radius:7px;}
+
+  #analyzeBtn{margin-left:auto;}
+
+  .add-competitor-row{display:flex; justify-content:flex-start; margin-bottom:16px;}
+
+  /* fetch status */
+  .fetch-status-list{display:flex; flex-direction:column; gap:10px; margin-top:4px;}
+  .fetch-status-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--surface-2);
+    font-size:12.5px;
+  }
+  .fetch-status-item .url{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink);}
+  .chip{
+    padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap;
+  }
+  .chip.pending{background:var(--surface-3); color:var(--ink-muted);}
+  .chip.ok{background:var(--good-tint); color:var(--good);}
+  .chip.fail{background:var(--danger-tint); color:var(--danger);}
+  .chip.manual{background:var(--warn-tint); color:var(--warn);}
+
+  .manual-paste{margin-top:8px; padding:12px; background:var(--surface-3); border-radius:10px;}
+  .manual-paste p{margin:0 0 8px; font-size:12px; color:var(--ink-muted);}
+  .manual-paste textarea{
+    width:100%; min-height:110px; padding:9px 10px; font-size:12px; border:none; border-radius:8px;
+    background:var(--surface); outline:none; color:var(--ink);
+    font-family:ui-monospace,Consolas,monospace; resize:vertical;
+  }
+  .manual-paste textarea:focus{ outline:2px solid var(--accent-grad-end); outline-offset:1px; }
+  .manual-paste .row{display:flex; justify-content:flex-end; gap:8px; margin-top:8px;}
+
+  .form-error{color:var(--danger); font-size:12.5px; margin:10px 0 0;}
+
+  [hidden]{display:none !important;}
+
+  .placeholder-note{font-size:13px; color:var(--ink-faint); text-align:center; padding:20px 0;}
+
+  /* ---- report ---- */
+  .report-actions{display:flex; justify-content:flex-end; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+
+  .score-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:14px; margin-bottom:8px;
+  }
+  .score-card{
+    background:var(--surface-2); border-radius:12px; padding:16px;
+  }
+  .score-card.yours{
+    background:var(--accent-tint);
+  }
+  .score-card .sc-label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-muted);}
+  .score-card.yours .sc-label{color:var(--accent-tint-ink);}
+  .score-card .sc-host{font-size:12px; color:var(--ink-faint); margin-bottom:8px; word-break:break-all;}
+  .score-card .sc-overall{font-size:34px; font-weight:800; color:var(--accent); line-height:1;}
+  .score-card .sc-overall span{font-size:15px; font-weight:600; color:var(--ink-faint);}
+  .score-card .sc-meters{margin-top:12px; display:flex; flex-direction:column; gap:7px;}
+  .mini-meter{display:flex; align-items:center; gap:8px; font-size:11px;}
+  .mini-meter .mm-label{width:64px; flex-shrink:0; color:var(--ink-muted);}
+  .mini-meter .mm-track{flex:1; height:6px; border-radius:4px; background:var(--surface-3); overflow:hidden;}
+  .mini-meter .mm-fill{height:100%; border-radius:4px;}
+  .mini-meter .mm-fill.good{background:var(--good);}
+  .mini-meter .mm-fill.warn{background:var(--warn);}
+  .mini-meter .mm-fill.bad{background:var(--danger);}
+  .mini-meter .mm-val{width:30px; text-align:right; color:var(--ink-faint); flex-shrink:0;}
+
+  .gap-list{display:flex; flex-direction:column; gap:10px;}
+  .gap-item{padding:14px 16px; background:var(--surface-2); border-radius:10px;}
+  .gap-item .gap-head{display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;}
+  .gap-item .gap-cat{
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+    padding:2px 8px; border-radius:999px; background:var(--accent-tint); color:var(--accent-tint-ink);
+  }
+  .gap-item .gap-label{font-size:13.5px; font-weight:700; color:var(--ink);}
+  .gap-item .gap-values{font-size:12px; color:var(--ink-muted); margin-bottom:6px;}
+  .gap-item .gap-values b{color:var(--danger);}
+  .gap-item .gap-values .comp-val b{color:var(--good);}
+  .gap-item .gap-rec{font-size:12.5px; color:var(--ink);}
+  .no-gaps{padding:16px; text-align:center; background:var(--good-tint); color:var(--good); border-radius:10px; font-size:13.5px; font-weight:600;}
+
+  .accordion-cat{border-radius:10px; overflow:hidden; background:var(--surface-2); margin-bottom:10px;}
+  .accordion-cat .acc-head{
+    display:flex; align-items:center; justify-content:space-between; padding:12px 14px; cursor:pointer; font-weight:700; font-size:13.5px; color:var(--accent);
+  }
+  .accordion-cat .acc-head .acc-arrow{transition:transform .15s; color:var(--ink-faint); font-size:12px;}
+  .accordion-cat.open .acc-head .acc-arrow{transform:rotate(90deg);}
+  .accordion-cat .acc-body{display:none; padding:0 14px 14px;}
+  .accordion-cat.open .acc-body{display:block;}
+
+  .compare-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .compare-table th, .compare-table td{padding:8px 10px; text-align:left; vertical-align:top;}
+  .compare-table thead th{color:var(--ink-muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; padding-bottom:10px;}
+  .compare-table tbody tr:nth-child(odd){background:rgba(35,56,111,.035);}
+  .compare-table td.param-label{font-weight:600; color:var(--ink); white-space:nowrap;}
+  .compare-table td.yours-col{background:rgba(69,144,165,.08);}
+  .pass-icon{font-weight:700;}
+  .pass-icon.pass{color:var(--good);}
+  .pass-icon.fail{color:var(--danger);}
+  .table-scroll{overflow-x:auto;}
+
+  .schema-site-block{margin-bottom:12px;}
+  .schema-site-block h4{font-size:12.5px; margin:0 0 6px; color:var(--ink);}
+  .schema-type-chip{
+    display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:8px; background:var(--surface-2);
+    font-size:12px; margin:0 6px 6px 0;
+  }
+  .schema-type-chip .stc-pct{font-weight:700; color:var(--accent);}
+  .schema-empty{font-size:12px; color:var(--ink-faint); font-style:italic;}
+
+  @media (max-width:640px){
+    header.page-head h1{font-size:24px;}
+    .field-row{flex-direction:column; align-items:stretch;}
+    .remove-btn{width:100%; height:32px;}
+    #analyzeBtn{margin-left:0; width:100%;}
+  }
+
+  @media print{
+    body{background:#fff !important; color:#000 !important;}
+    #inputPanel, #fetchPanel, .report-actions, header.page-head .eyebrow, header.page-head p{display:none !important;}
+    .panel{box-shadow:none !important; background:#fff !important; break-inside:avoid;}
+    .accordion-cat .acc-body{display:block !important;}
+    .accordion-cat .acc-head{cursor:default;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div class="eyebrow">Free Tool by Road to Top 5</div>
+    <h1>SEO Gap Radar</h1>
+    <p>Drop in your page and up to three competitors. Get a straight, actionable comparison of schema markup, title tags, and the on-page fundamentals Google actually looks at.</p>
+  </header>
+
+  <section class="panel" id="inputPanel">
+    <h2>Compare your page</h2>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="yourUrl">Your page URL</label>
+        <input type="url" id="yourUrl" placeholder="https://roadtotop5.com/your-page/">
+      </div>
+    </div>
+
+    <div id="competitorFields">
+      <div class="field-row" data-competitor-row>
+        <div class="field">
+          <label>Competitor URL 1</label>
+          <input type="url" class="competitor-input" placeholder="https://competitor.com/their-page/">
+        </div>
+        <button type="button" class="remove-btn" data-remove title="Remove">&times;</button>
+      </div>
+    </div>
+    <div class="field-hint">Add up to 3 competitor pages for the clearest gap analysis.</div>
+
+    <div class="add-competitor-row">
+      <button type="button" class="btn btn-ghost btn-sm" id="addCompetitorBtn">+ Add competitor</button>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" id="resetBtn">Reset</button>
+      <button type="button" class="btn btn-primary" id="analyzeBtn">Analyze pages</button>
+    </div>
+    <p class="form-error" id="formError" hidden></p>
+  </section>
+
+  <section class="panel" id="fetchPanel" hidden>
+    <h2>Fetching pages <span class="muted">— we try to grab these automatically; if a site blocks it, you can paste the HTML instead</span></h2>
+    <div class="fetch-status-list" id="fetchStatusList"></div>
+  </section>
+
+  <section id="reportSection" hidden></section>
+
+  <p class="placeholder-note" id="placeholderNote">Enter your page and at least one competitor above, then click Analyze.</p>
+
+</div>
+<script>
+/* ===== SEO Gap Radar — main script ===== */
+(function(){
+"use strict";
+
+/* ---------- small utilities ---------- */
+const $ = (sel, root) => (root||document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root||document).querySelectorAll(sel));
+
+function escapeHtml(str){
+  return String(str==null?"":str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function normalizeUrl(raw){
+  let u = (raw||"").trim();
+  if(!u) return "";
+  if(!/^https?:\/\//i.test(u)) u = "https://" + u;
+  try{ return new URL(u).toString(); }catch(e){ return ""; }
+}
+
+function hostnameOf(url){
+  try{ return new URL(url).hostname.replace(/^www\./i,""); }catch(e){ return url; }
+}
+
+/* ---------- form wiring: add/remove competitor rows, reset ---------- */
+function competitorRows(){ return $$('[data-competitor-row]', $("#competitorFields")); }
+
+function renumberCompetitors(){
+  competitorRows().forEach((row, i) => {
+    row.querySelector('label').textContent = 'Competitor URL ' + (i + 1);
+  });
+  const atLimit = competitorRows().length >= 3;
+  $("#addCompetitorBtn").disabled = atLimit;
+  $("#addCompetitorBtn").style.display = atLimit ? 'none' : '';
+}
+
+$("#addCompetitorBtn").addEventListener('click', () => {
+  if(competitorRows().length >= 3) return;
+  const row = document.createElement('div');
+  row.className = 'field-row';
+  row.setAttribute('data-competitor-row', '');
+  row.innerHTML =
+    '<div class="field">' +
+      '<label>Competitor URL</label>' +
+      '<input type="url" class="competitor-input" placeholder="https://competitor.com/their-page/">' +
+    '</div>' +
+    '<button type="button" class="remove-btn" data-remove title="Remove">&times;</button>';
+  $("#competitorFields").appendChild(row);
+  renumberCompetitors();
+});
+
+$("#competitorFields").addEventListener('click', (e) => {
+  if(e.target.matches('[data-remove]')){
+    const rows = competitorRows();
+    if(rows.length <= 1){
+      e.target.closest('[data-competitor-row]').querySelector('input').value = '';
+      return;
+    }
+    e.target.closest('[data-competitor-row]').remove();
+    renumberCompetitors();
+  }
+});
+
+$("#resetBtn").addEventListener('click', () => {
+  $("#yourUrl").value = '';
+  $$('.competitor-input').forEach((el, i) => {
+    if(i > 0) el.closest('[data-competitor-row]').remove();
+    else el.value = '';
+  });
+  renumberCompetitors();
+  $("#fetchPanel").hidden = true;
+  $("#fetchStatusList").innerHTML = '';
+  $("#reportSection").hidden = true;
+  $("#reportSection").innerHTML = '';
+  $("#placeholderNote").hidden = false;
+});
+
+renumberCompetitors();
+
+/* ---------- fetching pages: direct -> proxy 1 -> proxy 2 -> manual paste ---------- */
+/* Note: allorigins/corsproxy are free public services with no key. If either changes
+   its API or goes down, the manual-paste fallback below still keeps the tool working. */
+const PROXIES = [
+  null, // null = try a direct fetch first (works for the rare site that allows CORS)
+  (u) => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
+  (u) => "https://corsproxy.io/?url=" + encodeURIComponent(u)
+];
+const FETCH_TIMEOUT_MS = 9000;
+
+let sites = [];
+
+function fetchWithTimeout(url, ms){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal, redirect: 'follow' }).finally(() => clearTimeout(timer));
+}
+
+async function fetchPageHtml(targetUrl){
+  for(const proxyFn of PROXIES){
+    const fetchUrl = proxyFn ? proxyFn(targetUrl) : targetUrl;
+    try{
+      const res = await fetchWithTimeout(fetchUrl, FETCH_TIMEOUT_MS);
+      if(!res.ok) continue;
+      const text = await res.text();
+      if(text && text.length > 200 && /<html[\s>]|<!doctype/i.test(text)){
+        return { html: text, via: proxyFn ? 'proxy' : 'direct' };
+      }
+    }catch(e){ /* try the next method */ }
+  }
+  return null;
+}
+
+function buildSitesFromForm(){
+  const list = [];
+  const yourUrl = normalizeUrl($("#yourUrl").value);
+  if(yourUrl) list.push({ role: 'yours', label: 'Your site', url: yourUrl });
+  const competitorUrls = $$('.competitor-input').map(el => normalizeUrl(el.value)).filter(Boolean);
+  competitorUrls.forEach((u, i) => list.push({ role: 'competitor', label: 'Competitor ' + (i + 1), url: u }));
+  return list;
+}
+
+function fetchStatusRowHtml(site){
+  return '<div class="fetch-status-item" data-site-row="' + site.id + '">' +
+    '<span class="url" title="' + escapeHtml(site.url) + '">' + escapeHtml(site.label) + ' — ' + escapeHtml(hostnameOf(site.url)) + '</span>' +
+    '<span class="chip pending" data-chip>Fetching…</span>' +
+  '</div>';
+}
+
+function renderFetchStatusList(){
+  $("#fetchStatusList").innerHTML = sites.map(fetchStatusRowHtml).join('');
+}
+
+function setChip(site, cls, text){
+  const row = $('[data-site-row="' + site.id + '"]');
+  if(!row) return;
+  const chip = row.querySelector('[data-chip]');
+  chip.className = 'chip ' + cls;
+  chip.textContent = text;
+}
+
+function showManualPaste(site){
+  const row = $('[data-site-row="' + site.id + '"]');
+  if(!row) return;
+  if(row.nextElementSibling && row.nextElementSibling.dataset && row.nextElementSibling.dataset.manualFor === site.id) return;
+  const box = document.createElement('div');
+  box.className = 'manual-paste';
+  box.dataset.manualFor = site.id;
+  box.innerHTML =
+    '<p>Couldn\'t fetch this one automatically (the site is likely blocking cross-site requests). Open ' +
+    '<a href="' + escapeHtml(site.url) + '" target="_blank" rel="noopener noreferrer">the page</a>, right-click → View Page Source ' +
+    '(or press Ctrl/Cmd+U), select all, copy, and paste the HTML below.</p>' +
+    '<textarea placeholder="Paste page source HTML here"></textarea>' +
+    '<div class="row"><button type="button" class="btn btn-primary btn-sm" data-use-html>Use this HTML</button></div>';
+  row.insertAdjacentElement('afterend', box);
+  box.querySelector('[data-use-html]').addEventListener('click', () => {
+    const ta = box.querySelector('textarea');
+    const val = ta.value;
+    if(!val || val.trim().length < 50){
+      ta.style.boxShadow = '0 0 0 2px var(--danger) inset';
+      return;
+    }
+    site.html = val;
+    site.via = 'manual';
+    setChip(site, 'manual', 'Using pasted HTML');
+    box.remove();
+    maybeRenderReport();
+  });
+}
+
+async function fetchAndTrackSite(site){
+  const result = await fetchPageHtml(site.url);
+  if(result){
+    site.html = result.html;
+    site.via = result.via;
+    setChip(site, 'ok', result.via === 'direct' ? 'Fetched' : 'Fetched (via proxy)');
+  } else {
+    setChip(site, 'fail', 'Needs manual paste');
+    showManualPaste(site);
+  }
+}
+
+function maybeRenderReport(){
+  if(sites.length && sites.every(s => s.html)){
+    analyzeAllSitesAndRender();
+  }
+}
+
+/* ---------- page analysis: schema, meta tags, headings, content depth, technical ---------- */
+
+const SCHEMA_FIELD_CHECKLIST = {
+  Organization: ['name', 'url', 'logo', 'sameAs', 'contactPoint'],
+  LocalBusiness: ['name', 'address', 'telephone', 'openingHours', 'geo'],
+  Article: ['headline', 'author', 'datePublished', 'image', 'publisher'],
+  NewsArticle: ['headline', 'author', 'datePublished', 'image', 'publisher'],
+  BlogPosting: ['headline', 'author', 'datePublished', 'image', 'publisher'],
+  Product: ['name', 'image', 'description', 'offers', 'review', 'aggregateRating'],
+  FAQPage: ['mainEntity'],
+  BreadcrumbList: ['itemListElement'],
+  WebSite: ['name', 'url', 'potentialAction'],
+  WebPage: ['name', 'description'],
+  Person: ['name', 'url', 'sameAs'],
+  Review: ['author', 'reviewRating', 'itemReviewed'],
+  HowTo: ['name', 'step'],
+  VideoObject: ['name', 'description', 'thumbnailUrl', 'uploadDate'],
+  Service: ['name', 'provider', 'areaServed', 'description']
+};
+
+function extractSchemaInfo(doc){
+  const scripts = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
+  const found = [];
+  scripts.forEach(script => {
+    let json;
+    try{ json = JSON.parse(script.textContent); }catch(e){ return; }
+    const nodes = [];
+    (function walk(obj){
+      if(Array.isArray(obj)){ obj.forEach(walk); return; }
+      if(obj && typeof obj === 'object'){
+        if(obj['@type']) nodes.push(obj);
+        if(obj['@graph']) walk(obj['@graph']);
+      }
+    })(json);
+    nodes.forEach(node => {
+      const types = Array.isArray(node['@type']) ? node['@type'] : [node['@type']];
+      types.forEach(type => {
+        const checklist = SCHEMA_FIELD_CHECKLIST[type];
+        let completeness = null;
+        if(checklist && checklist.length){
+          const filled = checklist.filter(f => node[f] !== undefined && node[f] !== null && node[f] !== '');
+          completeness = Math.round((filled.length / checklist.length) * 100);
+        }
+        found.push({ type: type, completeness: completeness });
+      });
+    });
+  });
+  return found;
+}
+
+function summarizeSchemaTypes(schemaList){
+  const byType = new Map();
+  schemaList.forEach(s => {
+    const prev = byType.get(s.type);
+    if(!prev || (s.completeness != null && (prev.completeness == null || s.completeness > prev.completeness))){
+      byType.set(s.type, s);
+    }
+  });
+  return Array.from(byType.values());
+}
+
+function analyzeHeadings(doc){
+  const counts = {};
+  ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].forEach(tag => { counts[tag] = doc.querySelectorAll(tag).length; });
+  const h1Texts = Array.from(doc.querySelectorAll('h1')).map(h => h.textContent.trim()).filter(Boolean);
+  const total = Object.keys(counts).reduce((sum, k) => sum + counts[k], 0);
+  return { counts: counts, h1Count: counts.h1, h1Texts: h1Texts, totalHeadings: total };
+}
+
+function getMetaContent(doc, attr, value){
+  const el = doc.querySelector('meta[' + attr + '="' + value + '"]');
+  return el ? (el.getAttribute('content') || '').trim() : '';
+}
+
+function analyzeMetaTags(doc){
+  const titleEl = doc.querySelector('title');
+  const canonicalEl = doc.querySelector('link[rel="canonical"]');
+  return {
+    title: titleEl ? titleEl.textContent.trim() : '',
+    description: getMetaContent(doc, 'name', 'description'),
+    robots: getMetaContent(doc, 'name', 'robots'),
+    canonical: canonicalEl ? (canonicalEl.getAttribute('href') || '').trim() : '',
+    ogTitle: getMetaContent(doc, 'property', 'og:title'),
+    ogDescription: getMetaContent(doc, 'property', 'og:description'),
+    ogImage: getMetaContent(doc, 'property', 'og:image'),
+    ogType: getMetaContent(doc, 'property', 'og:type'),
+    twitterCard: getMetaContent(doc, 'name', 'twitter:card')
+  };
+}
+
+function analyzeTechnical(doc){
+  const hreflangs = Array.from(doc.querySelectorAll('link[rel="alternate"][hreflang]')).map(l => l.getAttribute('hreflang'));
+  return {
+    hreflangCount: hreflangs.length,
+    hreflangs: hreflangs,
+    viewport: !!doc.querySelector('meta[name="viewport"]'),
+    lang: (doc.documentElement && doc.documentElement.getAttribute('lang')) || '',
+    favicon: !!doc.querySelector('link[rel~="icon"]')
+  };
+}
+
+function analyzeLinks(doc, pageUrl){
+  const host = hostnameOf(pageUrl);
+  let internal = 0, external = 0;
+  Array.from(doc.querySelectorAll('a[href]')).forEach(a => {
+    const href = a.getAttribute('href');
+    if(!href || /^(#|mailto:|tel:|javascript:)/i.test(href)) return;
+    let resolved;
+    try{ resolved = new URL(href, pageUrl).toString(); }catch(e){ return; }
+    if(hostnameOf(resolved) === host) internal++; else external++;
+  });
+  return { internal: internal, external: external };
+}
+
+function estimateWordCount(doc){
+  if(!doc.body) return 0;
+  const clone = doc.body.cloneNode(true);
+  clone.querySelectorAll('script, style, noscript, nav, header, footer, aside, form').forEach(n => n.remove());
+  const text = clone.textContent || '';
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function analyzePage(site){
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(site.html, 'text/html');
+  const schemaRaw = extractSchemaInfo(doc);
+  const schema = summarizeSchemaTypes(schemaRaw);
+  const headings = analyzeHeadings(doc);
+  const meta = analyzeMetaTags(doc);
+  const technical = analyzeTechnical(doc);
+  const links = analyzeLinks(doc, site.url);
+  const wordCount = estimateWordCount(doc);
+  return {
+    schema: schema,
+    headings: headings,
+    meta: meta,
+    technical: technical,
+    links: links,
+    wordCount: wordCount,
+    titleLength: meta.title.length,
+    descriptionLength: meta.description.length
+  };
+}
+
+function analyzeAllSitesAndRender(){
+  sites.forEach(site => { site.analysis = analyzePage(site); });
+  console.log('[SEO Gap Radar] all sites ready, analyzing…', sites.map(s => s.url));
+  renderReport();
+}
+
+/* ---------- scoring + gap detection ---------- */
+
+function avgCompleteness(schemaList){
+  const withScore = schemaList.filter(s => s.completeness != null);
+  if(!withScore.length) return 0;
+  return Math.round(withScore.reduce((sum, s) => sum + s.completeness, 0) / withScore.length);
+}
+
+const CHECKS = [
+  // Meta Tags
+  { id: 'title-present', category: 'Meta Tags', label: 'Title tag present',
+    get: a => a.meta.title || '(missing)',
+    pass: a => !!a.meta.title,
+    recommend: () => 'Add a <title> tag — it\'s one of the strongest on-page ranking signals and is usually your search result headline.' },
+  { id: 'title-length', category: 'Meta Tags', label: 'Title length in the 30-60 character range',
+    get: a => a.titleLength + ' chars',
+    pass: a => a.titleLength >= 30 && a.titleLength <= 60,
+    recommend: a => 'Adjust your title tag length (currently ' + a.titleLength + ' chars) toward 30-60 characters so it doesn\'t get truncated or look thin in search results.' },
+  { id: 'description-present', category: 'Meta Tags', label: 'Meta description present',
+    get: a => a.meta.description || '(missing)',
+    pass: a => !!a.meta.description,
+    recommend: () => 'Add a meta description — it\'s frequently what Google shows as your search snippet text.' },
+  { id: 'description-length', category: 'Meta Tags', label: 'Description length in the 70-160 character range',
+    get: a => a.descriptionLength + ' chars',
+    pass: a => a.descriptionLength >= 70 && a.descriptionLength <= 160,
+    recommend: a => 'Rewrite your meta description (currently ' + a.descriptionLength + ' chars) to land closer to the 70-160 character sweet spot.' },
+  { id: 'canonical', category: 'Meta Tags', label: 'Canonical tag present',
+    get: a => a.meta.canonical || '(missing)',
+    pass: a => !!a.meta.canonical,
+    recommend: () => 'Add a canonical tag so Google isn\'t left guessing which URL is the authoritative version of this page.' },
+  { id: 'robots-ok', category: 'Meta Tags', label: 'Robots meta not blocking indexing',
+    get: a => a.meta.robots || '(default: indexable)',
+    pass: a => !/noindex/i.test(a.meta.robots || ''),
+    recommend: a => 'This page\'s robots meta tag ("' + a.meta.robots + '") currently blocks indexing — remove noindex if this page should rank.' },
+  { id: 'og-tags', category: 'Meta Tags', label: 'Open Graph tags present (title, description, image)',
+    get: a => [a.meta.ogTitle, a.meta.ogDescription, a.meta.ogImage].filter(Boolean).length + '/3',
+    pass: a => !!(a.meta.ogTitle && a.meta.ogDescription && a.meta.ogImage),
+    recommend: () => 'Fill in Open Graph title/description/image tags so links to this page show a proper preview when shared or cited.' },
+
+  // Schema
+  { id: 'schema-present', category: 'Schema', label: 'Structured data (schema.org) present',
+    get: a => a.schema.length ? a.schema.map(s => s.type).join(', ') : 'None found',
+    pass: a => a.schema.length > 0,
+    recommend: (a, comp) => 'Add structured data (JSON-LD) to this page' + (comp && comp.schema.length ? ' — the competitor page marks up ' + comp.schema.map(s => s.type).join(', ') + ', which helps eligibility for rich results.' : '.') },
+  { id: 'schema-completeness', category: 'Schema', label: 'Structured data fields well-filled (70%+ average)',
+    get: a => a.schema.length ? avgCompleteness(a.schema) + '%' : 'n/a',
+    pass: a => a.schema.length > 0 && avgCompleteness(a.schema) >= 70,
+    recommend: a => a.schema.length ? 'Flesh out the structured data already on this page (only ' + avgCompleteness(a.schema) + '% of the important fields are filled in).' : 'Add structured data before this check can pass.' },
+
+  // Content
+  { id: 'single-h1', category: 'Content', label: 'Exactly one H1',
+    get: a => String(a.headings.h1Count),
+    pass: a => a.headings.h1Count === 1,
+    recommend: a => a.headings.h1Count === 0 ? 'Add an H1 heading to this page — right now it has none.' : 'Use exactly one H1 per page — this one currently has ' + a.headings.h1Count + '.' },
+  { id: 'heading-structure', category: 'Content', label: 'Uses H2/H3 subheadings to structure content',
+    get: a => String(a.headings.counts.h2 + a.headings.counts.h3),
+    pass: a => (a.headings.counts.h2 + a.headings.counts.h3) > 0,
+    recommend: () => 'Break the content up with H2/H3 subheadings — it helps both readers scan the page and Google understand its structure.' },
+  { id: 'word-count', category: 'Content', label: 'Substantial content (300+ words)',
+    get: a => a.wordCount + ' words',
+    pass: a => a.wordCount >= 300,
+    recommend: (a, comp) => 'Add more substantive content — this page has ' + a.wordCount + ' words' + (comp ? ', the competitor page has ' + comp.wordCount + '.' : '.') },
+  { id: 'internal-links', category: 'Content', label: 'Has internal links to other pages on the same site',
+    get: a => String(a.links.internal),
+    pass: a => a.links.internal > 0,
+    recommend: () => 'Add internal links from this page to related pages on your own site — it spreads authority and helps Google find your content.' },
+
+  // Technical
+  { id: 'viewport', category: 'Technical', label: 'Mobile viewport tag present',
+    get: a => a.technical.viewport ? 'Yes' : 'No',
+    pass: a => a.technical.viewport,
+    recommend: () => 'Add a responsive viewport meta tag — without it this page may not render or rank well on mobile.' },
+  { id: 'lang-attr', category: 'Technical', label: 'HTML lang attribute set',
+    get: a => a.technical.lang || '(missing)',
+    pass: a => !!a.technical.lang,
+    recommend: () => 'Set a lang attribute on the <html> tag so search engines and screen readers know what language this page is in.' },
+  { id: 'favicon', category: 'Technical', label: 'Favicon present',
+    get: a => a.technical.favicon ? 'Yes' : 'No',
+    pass: a => a.technical.favicon,
+    recommend: () => 'Add a favicon — a small trust and polish signal that competitor pages already have.' }
+];
+
+const CATEGORY_ORDER = ['Schema', 'Meta Tags', 'Content', 'Technical'];
+
+function scoreSite(analysis){
+  const categories = {};
+  CHECKS.forEach(check => {
+    if(!categories[check.category]) categories[check.category] = { passed: 0, total: 0 };
+    categories[check.category].total++;
+    if(check.pass(analysis)) categories[check.category].passed++;
+  });
+  const categoryScores = {};
+  CATEGORY_ORDER.forEach(cat => {
+    const c = categories[cat];
+    categoryScores[cat] = c ? Math.round((c.passed / c.total) * 100) : 0;
+  });
+  const overall = Math.round(CATEGORY_ORDER.reduce((sum, cat) => sum + categoryScores[cat], 0) / CATEGORY_ORDER.length);
+  return { categoryScores: categoryScores, overall: overall };
+}
+
+function buildGaps(yourSite, competitorSites){
+  const gaps = [];
+  CHECKS.forEach(check => {
+    if(check.pass(yourSite.analysis)) return;
+    const passingCompetitors = competitorSites.filter(c => check.pass(c.analysis));
+    if(!passingCompetitors.length) return;
+    const bestCompetitor = passingCompetitors[0];
+    gaps.push({
+      id: check.id,
+      category: check.category,
+      label: check.label,
+      yourValue: check.get(yourSite.analysis),
+      competitorLabel: bestCompetitor.label,
+      competitorValue: check.get(bestCompetitor.analysis),
+      recommendation: check.recommend(yourSite.analysis, bestCompetitor.analysis)
+    });
+  });
+  return gaps;
+}
+
+/* ---------- report rendering ---------- */
+
+function bandClass(pct){
+  if(pct >= 80) return 'good';
+  if(pct >= 50) return 'warn';
+  return 'bad';
+}
+
+function scoreCardHtml(site){
+  const s = site.score;
+  return '<div class="score-card ' + (site.role === 'yours' ? 'yours' : '') + '">' +
+    '<div class="sc-label">' + escapeHtml(site.label) + '</div>' +
+    '<div class="sc-host">' + escapeHtml(hostnameOf(site.url)) + '</div>' +
+    '<div class="sc-overall">' + s.overall + '<span>/100</span></div>' +
+    '<div class="sc-meters">' +
+      CATEGORY_ORDER.map(cat => {
+        const pct = s.categoryScores[cat];
+        return '<div class="mini-meter"><span class="mm-label">' + cat + '</span>' +
+          '<span class="mm-track"><span class="mm-fill ' + bandClass(pct) + '" style="width:' + pct + '%"></span></span>' +
+          '<span class="mm-val">' + pct + '%</span></div>';
+      }).join('') +
+    '</div>' +
+  '</div>';
+}
+
+function gapItemHtml(gap){
+  return '<div class="gap-item">' +
+    '<div class="gap-head"><span class="gap-cat">' + escapeHtml(gap.category) + '</span><span class="gap-label">' + escapeHtml(gap.label) + '</span></div>' +
+    '<div class="gap-values">Your site: <b>' + escapeHtml(gap.yourValue) + '</b> &nbsp;·&nbsp; ' + escapeHtml(gap.competitorLabel) + ': <span class="comp-val"><b>' + escapeHtml(gap.competitorValue) + '</b></span></div>' +
+    '<div class="gap-rec">' + escapeHtml(gap.recommendation) + '</div>' +
+  '</div>';
+}
+
+function compareTableHtml(allSites){
+  return CATEGORY_ORDER.map(cat => {
+    const checksInCat = CHECKS.filter(c => c.category === cat);
+    const rows = checksInCat.map(check => {
+      const cells = allSites.map(site => {
+        const val = check.get(site.analysis);
+        const passed = check.pass(site.analysis);
+        return '<td class="' + (site.role === 'yours' ? 'yours-col' : '') + '">' +
+          '<span class="pass-icon ' + (passed ? 'pass' : 'fail') + '">' + (passed ? '✓' : '✕') + '</span> ' +
+          escapeHtml(val) + '</td>';
+      }).join('');
+      return '<tr><td class="param-label">' + escapeHtml(check.label) + '</td>' + cells + '</tr>';
+    }).join('');
+    return '<div class="accordion-cat" data-acc>' +
+      '<div class="acc-head" data-acc-toggle><span>' + escapeHtml(cat) + '</span><span class="acc-arrow">▶</span></div>' +
+      '<div class="acc-body"><div class="table-scroll"><table class="compare-table">' +
+        '<thead><tr><th>Parameter</th>' + allSites.map(s => '<th>' + escapeHtml(s.label) + '</th>').join('') + '</tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table></div></div>' +
+    '</div>';
+  }).join('');
+}
+
+function schemaDetailHtml(allSites){
+  return allSites.map(site => {
+    const chips = site.analysis.schema.length
+      ? site.analysis.schema.map(s =>
+          '<span class="schema-type-chip">' + escapeHtml(s.type) +
+          (s.completeness != null ? ' <span class="stc-pct">' + s.completeness + '%</span>' : '') +
+          '</span>'
+        ).join('')
+      : '<span class="schema-empty">No structured data found on this page.</span>';
+    return '<div class="schema-site-block"><h4>' + escapeHtml(site.label) + ' — ' + escapeHtml(hostnameOf(site.url)) + '</h4>' + chips + '</div>';
+  }).join('');
+}
+
+function buildTextReport(yourSite, competitorSites, gaps){
+  const lines = [];
+  lines.push('SEO Gap Radar report');
+  lines.push('Your page: ' + yourSite.url + ' — Score: ' + yourSite.score.overall + '/100');
+  competitorSites.forEach(c => lines.push(c.label + ': ' + c.url + ' — Score: ' + c.score.overall + '/100'));
+  lines.push('');
+  lines.push('Actionable gaps:');
+  if(!gaps.length){
+    lines.push('- None found — your page matches or beats competitors on every check.');
+  } else {
+    gaps.forEach(g => {
+      lines.push('- [' + g.category + '] ' + g.label + ': you have "' + g.yourValue + '", ' + g.competitorLabel + ' has "' + g.competitorValue + '". ' + g.recommendation);
+    });
+  }
+  return lines.join('\n');
+}
+
+function renderReport(){
+  const yourSite = sites.find(s => s.role === 'yours');
+  const competitorSites = sites.filter(s => s.role === 'competitor');
+
+  sites.forEach(s => { s.score = scoreSite(s.analysis); });
+  const gaps = buildGaps(yourSite, competitorSites);
+
+  const html =
+    '<div class="report-actions">' +
+      '<button type="button" class="btn btn-ghost" id="copyReportBtn">Copy summary</button>' +
+      '<button type="button" class="btn btn-ghost" id="printReportBtn">Print / Save as PDF</button>' +
+    '</div>' +
+
+    '<section class="panel">' +
+      '<h2>Score summary</h2>' +
+      '<div class="score-grid">' + sites.map(scoreCardHtml).join('') + '</div>' +
+    '</section>' +
+
+    '<section class="panel">' +
+      '<h2>Actionable gaps <span class="muted">— where competitors beat you, and what to do about it</span></h2>' +
+      (gaps.length
+        ? '<div class="gap-list">' + gaps.map(gapItemHtml).join('') + '</div>'
+        : '<div class="no-gaps">No clear gaps found — your page already matches or beats your competitors on every check below.</div>') +
+    '</section>' +
+
+    '<section class="panel">' +
+      '<h2>Full comparison <span class="muted">— click a category to expand</span></h2>' +
+      compareTableHtml(sites) +
+    '</section>' +
+
+    '<section class="panel">' +
+      '<h2>Structured data detail</h2>' +
+      schemaDetailHtml(sites) +
+    '</section>';
+
+  $("#reportSection").innerHTML = html;
+  $("#reportSection").hidden = false;
+
+  $$('.accordion-cat', $("#reportSection")).forEach((el, i) => {
+    if(i === 0) el.classList.add('open');
+    el.querySelector('[data-acc-toggle]').addEventListener('click', () => el.classList.toggle('open'));
+  });
+
+  $("#copyReportBtn").addEventListener('click', () => {
+    const text = buildTextReport(yourSite, competitorSites, gaps);
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = $("#copyReportBtn");
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy summary'; }, 1500);
+    });
+  });
+
+  $("#printReportBtn").addEventListener('click', () => window.print());
+}
+
+$("#analyzeBtn").addEventListener('click', async () => {
+  const err = $("#formError");
+  err.hidden = true;
+
+  const list = buildSitesFromForm();
+  if(!list.length || list[0].role !== 'yours'){
+    err.textContent = 'Enter your page URL first.';
+    err.hidden = false;
+    return;
+  }
+  if(list.filter(s => s.role === 'competitor').length === 0){
+    err.textContent = 'Add at least one competitor URL.';
+    err.hidden = false;
+    return;
+  }
+
+  sites = list.map((s, i) => Object.assign({ id: 'site' + i, html: null, via: null }, s));
+
+  $("#placeholderNote").hidden = true;
+  $("#reportSection").hidden = true;
+  $("#reportSection").innerHTML = '';
+  $("#fetchPanel").hidden = false;
+  renderFetchStatusList();
+  $("#analyzeBtn").disabled = true;
+
+  await Promise.all(sites.map(fetchAndTrackSite));
+
+  $("#analyzeBtn").disabled = false;
+  maybeRenderReport();
+});
+
+})();
+</script>
+</body>
+</html>
