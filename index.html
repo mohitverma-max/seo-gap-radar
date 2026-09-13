@@ -315,15 +315,24 @@ $("#resetBtn").addEventListener('click', () => {
 
 renumberCompetitors();
 
-/* ---------- fetching pages: direct -> proxy 1 -> proxy 2 -> manual paste ---------- */
-/* Note: allorigins/corsproxy are free public services with no key. If either changes
-   its API or goes down, the manual-paste fallback below still keeps the tool working. */
+/* ---------- fetching pages: direct -> your own proxy (optional) -> public proxies -> manual paste ---------- */
+/* Note on the public proxies: allorigins.win and corsproxy.io are free third-party services
+   with no uptime guarantee. corsproxy.io now requires a paid API key for most requests, and
+   allorigins.win has periods where it is slow or unreachable — when that happens every URL
+   falls through to manual paste, which can look like "the tool is broken" even though the
+   analyzer itself is fine. The fix that removes this dependency entirely is to run your own
+   tiny proxy (see cors-proxy-worker.js — a free Cloudflare Worker) and paste its URL into
+   CUSTOM_PROXY_URL below. Until then, the public proxies are tried as a best effort and
+   manual paste always works as a guaranteed fallback. */
+const CUSTOM_PROXY_URL = ''; // e.g. 'https://your-worker-name.your-subdomain.workers.dev/?url='
+
 const PROXIES = [
-  null, // null = try a direct fetch first (works for the rare site that allows CORS)
-  (u) => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
-  (u) => "https://corsproxy.io/?url=" + encodeURIComponent(u)
+  { fn: null, mode: 'raw' }, // try a direct fetch first (works for the rare site that allows CORS)
+  ...(CUSTOM_PROXY_URL ? [{ fn: (u) => CUSTOM_PROXY_URL + encodeURIComponent(u), mode: 'raw' }] : []),
+  { fn: (u) => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u), mode: 'raw' },
+  { fn: (u) => "https://api.allorigins.win/get?url=" + encodeURIComponent(u), mode: 'json' } // different backend path from /raw; sometimes succeeds when it doesn't
 ];
-const FETCH_TIMEOUT_MS = 9000;
+const FETCH_TIMEOUT_MS = 8000;
 
 let sites = [];
 
@@ -333,15 +342,23 @@ function fetchWithTimeout(url, ms){
   return fetch(url, { signal: controller.signal, redirect: 'follow' }).finally(() => clearTimeout(timer));
 }
 
+function isLikelyHtml(text){
+  return !!text && text.length > 200 && /<html[\s>]|<!doctype/i.test(text);
+}
+
 async function fetchPageHtml(targetUrl){
-  for(const proxyFn of PROXIES){
-    const fetchUrl = proxyFn ? proxyFn(targetUrl) : targetUrl;
+  for(const proxy of PROXIES){
+    const fetchUrl = proxy.fn ? proxy.fn(targetUrl) : targetUrl;
     try{
       const res = await fetchWithTimeout(fetchUrl, FETCH_TIMEOUT_MS);
       if(!res.ok) continue;
-      const text = await res.text();
-      if(text && text.length > 200 && /<html[\s>]|<!doctype/i.test(text)){
-        return { html: text, via: proxyFn ? 'proxy' : 'direct' };
+      const raw = await res.text();
+      let text = raw;
+      if(proxy.mode === 'json'){
+        try{ text = JSON.parse(raw).contents || ''; }catch(e){ continue; }
+      }
+      if(isLikelyHtml(text)){
+        return { html: text, via: proxy.fn ? 'proxy' : 'direct' };
       }
     }catch(e){ /* try the next method */ }
   }
@@ -384,11 +401,13 @@ function showManualPaste(site){
   box.className = 'manual-paste';
   box.dataset.manualFor = site.id;
   box.innerHTML =
-    '<p>Couldn\'t fetch this one automatically (the site is likely blocking cross-site requests). Open ' +
+    '<p>Automatic fetch didn\'t work for this one — usually because the free proxy service the tool relies on is ' +
+    'temporarily down or the target site blocks cross-site requests. Open ' +
     '<a href="' + escapeHtml(site.url) + '" target="_blank" rel="noopener noreferrer">the page</a>, right-click → View Page Source ' +
-    '(or press Ctrl/Cmd+U), select all, copy, and paste the HTML below.</p>' +
+    '(or press Ctrl/Cmd+U), select all, copy, and paste the HTML below — or try again.</p>' +
     '<textarea placeholder="Paste page source HTML here"></textarea>' +
-    '<div class="row"><button type="button" class="btn btn-primary btn-sm" data-use-html>Use this HTML</button></div>';
+    '<div class="row"><button type="button" class="btn btn-sm" data-retry-fetch>Try automatic fetch again</button>' +
+    '<button type="button" class="btn btn-primary btn-sm" data-use-html>Use this HTML</button></div>';
   row.insertAdjacentElement('afterend', box);
   box.querySelector('[data-use-html]').addEventListener('click', () => {
     const ta = box.querySelector('textarea');
@@ -402,6 +421,19 @@ function showManualPaste(site){
     setChip(site, 'manual', 'Using pasted HTML');
     box.remove();
     maybeRenderReport();
+  });
+  box.querySelector('[data-retry-fetch]').addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    e.target.textContent = 'Retrying…';
+    setChip(site, 'pending', 'Fetching…');
+    await fetchAndTrackSite(site);
+    if(site.html){
+      box.remove();
+      maybeRenderReport();
+    } else {
+      e.target.disabled = false;
+      e.target.textContent = 'Try automatic fetch again';
+    }
   });
 }
 
