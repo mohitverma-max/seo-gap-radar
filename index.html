@@ -37,13 +37,6 @@
     padding:32px 18px 60px;
   }
   .wrap{max-width:1180px; margin:0 auto;}
-  header.page-head{text-align:center; margin-bottom:26px;}
-  header.page-head .eyebrow{
-    font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
-    color:var(--accent-grad-end); margin-bottom:8px;
-  }
-  header.page-head h1{font-size:30px; margin:0 0 8px; color:var(--accent);}
-  header.page-head p{font-size:14.5px; color:var(--ink-muted); max-width:620px; margin:0 auto;}
 
   .panel{
     background:var(--surface); border-radius:var(--radius); padding:22px 24px;
@@ -184,7 +177,6 @@
   .schema-empty{font-size:12px; color:var(--ink-faint); font-style:italic;}
 
   @media (max-width:640px){
-    header.page-head h1{font-size:24px;}
     .field-row{flex-direction:column; align-items:stretch;}
     .remove-btn{width:100%; height:32px;}
     #analyzeBtn{margin-left:0; width:100%;}
@@ -192,7 +184,7 @@
 
   @media print{
     body{background:#fff !important; color:#000 !important;}
-    #inputPanel, #fetchPanel, .report-actions, header.page-head .eyebrow, header.page-head p{display:none !important;}
+    #inputPanel, #fetchPanel, .report-actions{display:none !important;}
     .panel{box-shadow:none !important; background:#fff !important; break-inside:avoid;}
     .accordion-cat .acc-body{display:block !important;}
     .accordion-cat .acc-head{cursor:default;}
@@ -201,12 +193,6 @@
 </head>
 <body>
 <div class="wrap">
-
-  <header class="page-head">
-    <div class="eyebrow">Free Tool by Road to Top 5</div>
-    <h1>SEO Gap Radar</h1>
-    <p>Drop in your page and up to three competitors. Get a straight, actionable comparison of schema markup, title tags, and the on-page fundamentals Google actually looks at.</p>
-  </header>
 
   <section class="panel" id="inputPanel">
     <h2>Compare your page</h2>
